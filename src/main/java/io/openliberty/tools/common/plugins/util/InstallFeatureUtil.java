@@ -1151,7 +1151,14 @@ public abstract class InstallFeatureUtil extends ServerFeatureUtil {
             } else {
                 productInfoFile = installDirectory + "/bin/productInfo";
             }
+
             ProcessBuilder pb = new ProcessBuilder(productInfoFile, action);
+            Properties sysp = System.getProperties();
+            String javaHome = sysp.getProperty("java.home");
+            if (javaHome != null) {
+                pb.environment().put("JAVA_HOME", javaHome);
+            }
+            pb.redirectErrorStream(true);
             pr = pb.start();
 
             in = new BufferedReader(new InputStreamReader(pr.getInputStream()));
