@@ -92,7 +92,7 @@ public abstract class InstallFeatureUtil extends ServerFeatureUtil {
     
     private final Collection<Map<String, String>> keyMap;
     
-    
+    private final Map<String, String> environmentVariables;
     
     /**
      * An enum for specifying verify option
@@ -137,11 +137,14 @@ public abstract class InstallFeatureUtil extends ServerFeatureUtil {
      *                           installed in a container. Otherwise null.
      * @param additionalJsons	 The list of additional JSONS to search
      * 							 for features from
+     * @param verifyValue        The verify option value
+     * @param keyMap             The key map for feature verification
+     * @param environmentVariables Environment variables to pass to processes (e.g., JAVA_HOME)
      * @throws PluginScenarioException  If the current scenario is not supported
      * @throws PluginExecutionException If properties files cannot be found in the
      *                                  installDirectory/lib/versions
      */
-    public InstallFeatureUtil(File installDirectory, File buildDirectory, String from, String to, Set<String> pluginListedEsas, List<ProductProperties> propertiesList, String openLibertyVersion, String containerName, List<String> additionalJsons, String verifyValue, Collection<Map<String, String>> keyMap) throws PluginScenarioException, PluginExecutionException {
+    public InstallFeatureUtil(File installDirectory, File buildDirectory, String from, String to, Set<String> pluginListedEsas, List<ProductProperties> propertiesList, String openLibertyVersion, String containerName, List<String> additionalJsons, String verifyValue, Collection<Map<String, String>> keyMap, Map<String, String> environmentVariables) throws PluginScenarioException, PluginExecutionException {
         this.installDirectory = installDirectory;
         this.buildDirectory = buildDirectory;
         this.to = to;
@@ -157,6 +160,8 @@ public abstract class InstallFeatureUtil extends ServerFeatureUtil {
         }else {
             this.keyMap = keyMap;
         }
+
+        this.environmentVariables = environmentVariables == null ? new HashMap<>() : environmentVariables;
         
         try {
           this.verifyOption = VerifyOption.valueOf(verifyValue);
@@ -1119,7 +1124,7 @@ public abstract class InstallFeatureUtil extends ServerFeatureUtil {
      *             if product validation failed or could not be run
      */
     private void productInfoValidate() throws PluginExecutionException {
-        String output = productInfo(installDirectory, "validate");
+        String output = productInfo(installDirectory, "validate", environmentVariables);
         if (output == null) {
             throw new PluginExecutionException(
                     "Could not perform product validation. The productInfo command returned with no output");
@@ -1140,6 +1145,20 @@ public abstract class InstallFeatureUtil extends ServerFeatureUtil {
      * @throws PluginExecutionException if the exit value of the command was not 0
      */
     public static String productInfo(File installDirectory, String action) throws PluginExecutionException {
+        return productInfo(installDirectory, action, null);
+    }
+    
+    /**
+     * Runs the productInfo command with environment variables and returns the output
+     * Made public static for tests to use in LMP/LGP
+     * 
+     * @param installDirectory The directory of the installed runtime
+     * @param action           The action to perform for the productInfo command
+     * @param envVars          Environment variables to set (e.g., JAVA_HOME). Can be null.
+     * @return The command output
+     * @throws PluginExecutionException if the exit value of the command was not 0
+     */
+    public static String productInfo(File installDirectory, String action, Map<String, String> envVars) throws PluginExecutionException {
         Process pr = null;
         BufferedReader in = null;
         StringBuilder sb = new StringBuilder();
@@ -1152,6 +1171,21 @@ public abstract class InstallFeatureUtil extends ServerFeatureUtil {
                 productInfoFile = installDirectory + "/bin/productInfo";
             }
             ProcessBuilder pb = new ProcessBuilder(productInfoFile, action);
+            
+            // Apply environment variables from toolchain if provided
+            if (envVars != null && !envVars.isEmpty()) {
+                pb.environment().putAll(envVars);
+            }
+            
+            // Fallback to system property if JAVA_HOME not in envVars
+            if (envVars == null || !envVars.containsKey("JAVA_HOME")) {
+                Properties sysp = System.getProperties();
+                String javaHome = sysp.getProperty("java.home");
+                if (javaHome != null) {
+                    pb.environment().put("JAVA_HOME", javaHome);
+                }
+            }
+            
             pr = pb.start();
 
             in = new BufferedReader(new InputStreamReader(pr.getInputStream()));

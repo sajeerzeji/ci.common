@@ -58,7 +58,7 @@ public class BaseInstallFeatureUtilTest {
     
     public class InstallFeatureTestUtil extends InstallFeatureUtil {
         public InstallFeatureTestUtil(File installDirectory, File buildDirectory, String from, String to, Set<String> pluginListedEsas, List<ProductProperties> propertiesList, String openLibertyVersion, List<String> additionalJsons, String verifyOption, Collection<Map<String,String>> keyMap)  throws PluginScenarioException, PluginExecutionException {
-            super(installDirectory, buildDirectory, from, to, pluginListedEsas, propertiesList, openLibertyVersion, null, additionalJsons, verifyOption, keyMap);
+            super(installDirectory, buildDirectory, from, to, pluginListedEsas, propertiesList, openLibertyVersion, null, additionalJsons, verifyOption, keyMap, null);
         }
 
         @Override
