@@ -162,7 +162,7 @@ public abstract class InstallFeatureUtil extends ServerFeatureUtil {
         }
 
         this.environmentVariables = environmentVariables == null ? new HashMap<>() : environmentVariables;
-        
+
         try {
           this.verifyOption = VerifyOption.valueOf(verifyValue);
 	} catch (IllegalArgumentException e) {
@@ -1147,11 +1147,11 @@ public abstract class InstallFeatureUtil extends ServerFeatureUtil {
     public static String productInfo(File installDirectory, String action) throws PluginExecutionException {
         return productInfo(installDirectory, action, null);
     }
-    
+
     /**
      * Runs the productInfo command with environment variables and returns the output
      * Made public static for tests to use in LMP/LGP
-     * 
+     *
      * @param installDirectory The directory of the installed runtime
      * @param action           The action to perform for the productInfo command
      * @param envVars          Environment variables to set (e.g., JAVA_HOME). Can be null.
@@ -1170,13 +1170,14 @@ public abstract class InstallFeatureUtil extends ServerFeatureUtil {
             } else {
                 productInfoFile = installDirectory + "/bin/productInfo";
             }
+
             ProcessBuilder pb = new ProcessBuilder(productInfoFile, action);
-            
+
             // Apply environment variables from toolchain if provided
             if (envVars != null && !envVars.isEmpty()) {
                 pb.environment().putAll(envVars);
             }
-            
+
             // Fallback to system property if JAVA_HOME not in envVars
             if (envVars == null || !envVars.containsKey("JAVA_HOME")) {
                 Properties sysp = System.getProperties();
@@ -1185,7 +1186,7 @@ public abstract class InstallFeatureUtil extends ServerFeatureUtil {
                     pb.environment().put("JAVA_HOME", javaHome);
                 }
             }
-            
+            pb.redirectErrorStream(true);
             pr = pb.start();
 
             in = new BufferedReader(new InputStreamReader(pr.getInputStream()));
