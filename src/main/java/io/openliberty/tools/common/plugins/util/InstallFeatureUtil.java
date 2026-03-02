@@ -122,8 +122,39 @@ public abstract class InstallFeatureUtil extends ServerFeatureUtil {
 
     /**
      * Initialize the utility and check for unsupported scenarios.
-     * 
+     * Calls the constructor InstallFeatureUtil(java.io.File, java.io.File, java.lang.String, java.lang.String, java.util.Set, java.util.List, java.lang.String, java.lang.String, java.util.List, java.lang.String, java.util.Collection, java.util.Map)
+     * with environmentVariables set to null.
+     *
      * @param installDirectory   The install directory
+     * @param buildDirectory     The build directory
+     * @param from               The "from" parameter specified in the plugin
+     *                           configuration, or null if not specified
+     * @param to                 The "to" parameter specified in the plugin
+     *                           configuration, or null if not specified
+     * @param pluginListedEsas   The list of ESAs specified in the plugin
+     *                           configuration, or null if not specified
+     * @param propertiesList     The list of product properties installed with the
+     *                           Open Liberty runtime
+     * @param openLibertyVersion The version of the Open Liberty runtime
+     * @param containerName      The container name if the features should be
+     *                           installed in a container. Otherwise null.
+     * @param additionalJsons    The list of additional JSONS to search
+     *                           for features from
+     * @param verifyValue        The verify option value
+     * @param keyMap             The key map for feature verification
+     * @throws PluginScenarioException  If the current scenario is not supported
+     * @throws PluginExecutionException If properties files cannot be found in the
+     *                                  installDirectory/lib/versions
+     */
+    public InstallFeatureUtil(File installDirectory, File buildDirectory, String from, String to, Set<String> pluginListedEsas, List<ProductProperties> propertiesList, String openLibertyVersion, String containerName, List<String> additionalJsons, String verifyValue, Collection<Map<String, String>> keyMap) throws PluginScenarioException, PluginExecutionException {
+        this(installDirectory, buildDirectory, from, to, pluginListedEsas, propertiesList, openLibertyVersion, containerName, additionalJsons, verifyValue, keyMap, null);
+    }
+
+    /**
+     * Initialize the utility and check for unsupported scenarios.
+     *
+     * @param installDirectory   The install directory
+     * @param buildDirectory     The build directory
      * @param from               The "from" parameter specified in the plugin
      *                           configuration, or null if not specified
      * @param to                 The "to" parameter specified in the plugin
@@ -1154,11 +1185,11 @@ public abstract class InstallFeatureUtil extends ServerFeatureUtil {
      *
      * @param installDirectory The directory of the installed runtime
      * @param action           The action to perform for the productInfo command
-     * @param envVars          Environment variables to set (e.g., JAVA_HOME). Can be null.
+     * @param environmentVariables          Environment variables to set (e.g., JAVA_HOME). Can be null.
      * @return The command output
      * @throws PluginExecutionException if the exit value of the command was not 0
      */
-    public static String productInfo(File installDirectory, String action, Map<String, String> envVars) throws PluginExecutionException {
+    public static String productInfo(File installDirectory, String action, Map<String, String> environmentVariables) throws PluginExecutionException {
         Process pr = null;
         BufferedReader in = null;
         StringBuilder sb = new StringBuilder();
@@ -1172,20 +1203,17 @@ public abstract class InstallFeatureUtil extends ServerFeatureUtil {
             }
 
             ProcessBuilder pb = new ProcessBuilder(productInfoFile, action);
+            Properties sysp = System.getProperties() != null ? System.getProperties() : new Properties();
+            String javaHome = sysp.getProperty("java.home");
+            if (javaHome != null) {
+                pb.environment().put("JAVA_HOME", javaHome);
+            }
 
             // Apply environment variables from toolchain if provided
-            if (envVars != null && !envVars.isEmpty()) {
-                pb.environment().putAll(envVars);
+            if (environmentVariables != null && !environmentVariables.isEmpty()) {
+                pb.environment().putAll(environmentVariables);
             }
 
-            // Fallback to system property if JAVA_HOME not in envVars
-            if (envVars == null || !envVars.containsKey("JAVA_HOME")) {
-                Properties sysp = System.getProperties();
-                String javaHome = sysp.getProperty("java.home");
-                if (javaHome != null) {
-                    pb.environment().put("JAVA_HOME", javaHome);
-                }
-            }
             pb.redirectErrorStream(true);
             pr = pb.start();
 
