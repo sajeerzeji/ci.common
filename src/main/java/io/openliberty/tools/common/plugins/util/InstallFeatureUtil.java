@@ -1155,6 +1155,9 @@ public abstract class InstallFeatureUtil extends ServerFeatureUtil {
      *             if product validation failed or could not be run
      */
     private void productInfoValidate() throws PluginExecutionException {
+        if (environmentVariables != null && environmentVariables.containsKey("JAVA_HOME")) {
+            info("Product validation is using toolchain JAVA_HOME: " + environmentVariables.get("JAVA_HOME"));
+        }
         String output = productInfo(installDirectory, "validate", environmentVariables);
         if (output == null) {
             throw new PluginExecutionException(
