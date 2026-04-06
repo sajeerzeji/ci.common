@@ -4529,8 +4529,6 @@ public abstract class DevUtil extends AbstractContainerSupportUtil {
                         debug("Liberty hot reload detected (CWWKZ0003I), clearing recompileJavaSources list to prevent duplicate recompilation");
                         debug("Files that will not be recompiled: " + recompileJavaSources);
                         recompileJavaSources.clear();
-                        // Also clear related flags
-                        triggerJavaSourceRecompile = false;
                     }
                 }
             } else if (changeType == ChangeType.DELETE) {
