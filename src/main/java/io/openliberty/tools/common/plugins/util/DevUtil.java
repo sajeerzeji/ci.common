@@ -4522,6 +4522,15 @@ public abstract class DevUtil extends AbstractContainerSupportUtil {
                 debug("Java source class file modified: " + fileChanged.getName()
                         + ". Adding to list for processing.");
                 modifiedClasses.add(fileChanged);
+
+                if (!recompileJavaSources.isEmpty()) {
+                    int currentMessages = countApplicationUpdatedMessages();
+                    if (currentMessages > numApplicationUpdatedMessages) {
+                        debug("Liberty hot reload detected (CWWKZ0003I), clearing recompileJavaSources list to prevent duplicate recompilation");
+                        debug("Files that will not be recompiled: " + recompileJavaSources);
+                        recompileJavaSources.clear();
+                    }
+                }
             } else if (changeType == ChangeType.DELETE) {
                 debug("Java source class deleted: " + fileChanged.getName() + ". Adding to list for processing.");
                 modifiedClasses.remove(fileChanged); // remove if class file is already stored in list
