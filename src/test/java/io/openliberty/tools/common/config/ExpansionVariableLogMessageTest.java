@@ -49,7 +49,10 @@ public class ExpansionVariableLogMessageTest {
     }
 
     // server.env is placed in serverDir because SERVER_CONFIG_DIR maps there, making it visible to processServerEnv()
+    // A minimal server.xml is required so that ServerConfigDocument.<init> does not NPE when it calls parseDocument(serverXMLFile).
     private ServerConfigDocument buildDoc(CapturingLogger log, File serverDir, String serverEnvContent) throws Exception {
+        Files.write(new File(serverDir, "server.xml").toPath(),
+                "<server/>".getBytes());
         Files.write(new File(serverDir, "server.env").toPath(), serverEnvContent.getBytes());
 
         Map<String, File> dirMap = new HashMap<>();
