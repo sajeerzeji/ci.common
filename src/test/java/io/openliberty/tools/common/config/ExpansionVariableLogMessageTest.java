@@ -121,8 +121,9 @@ public class ExpansionVariableLogMessageTest {
         CapturingLogger log = new CapturingLogger();
         File serverDir = tmp.newFolder("server-win");
 
-        // Reproduces the exact scenario from issue #2076
-        String envContent = "IBM_JAVA_SEMERU_HOME=C:\\MyData\\java\\ibm-semeru-certified\nJAVA_HOME=!IBM_JAVA_SEMERU_HOME!\\jdk-21.0.10+7\n";
+        // Reproduces the exact scenario from issue #2076.
+        // Backslashes must be doubled in the .properties file format so that Properties.load() preserves them as single backslashes.
+        String envContent = "IBM_JAVA_SEMERU_HOME=C:\\\\MyData\\\\java\\\\ibm-semeru-certified\nJAVA_HOME=!IBM_JAVA_SEMERU_HOME!\\\\jdk-21.0.10+7\n";
         buildDoc(log, serverDir, envContent).processServerEnv();
 
         String expectedMsg = "Resolved environment variable \"IBM_JAVA_SEMERU_HOME\" in path \"!IBM_JAVA_SEMERU_HOME!\\jdk-21.0.10+7\" to \"C:\\MyData\\java\\ibm-semeru-certified\\jdk-21.0.10+7\"";
