@@ -126,7 +126,9 @@ public class ExpansionVariableLogMessageTest {
         String envContent = "IBM_JAVA_SEMERU_HOME=C:\\\\MyData\\\\java\\\\ibm-semeru-certified\nJAVA_HOME=!IBM_JAVA_SEMERU_HOME!\\\\jdk-21.0.10+7\n";
         buildDoc(log, serverDir, envContent).processServerEnv();
 
-        String expectedMsg = "Resolved environment variable \"IBM_JAVA_SEMERU_HOME\" in path \"!IBM_JAVA_SEMERU_HOME!\\jdk-21.0.10+7\" to \"C:\\MyData\\java\\ibm-semeru-certified\\jdk-21.0.10+7\"";
+        // per-var log: shows only what IBM_JAVA_SEMERU_HOME itself resolved to, not the full concatenated value
+        String expectedMsg = "Resolved environment variable \"IBM_JAVA_SEMERU_HOME\" in path \"!IBM_JAVA_SEMERU_HOME!\\jdk-21.0.10+7\" to \"C:\\MyData\\java\\ibm-semeru-certified\"";
+        // summary log: shows the full expression after all substitutions
         String expectedSummary = "Resolved path \"!IBM_JAVA_SEMERU_HOME!\\jdk-21.0.10+7\" to \"C:\\MyData\\java\\ibm-semeru-certified\\jdk-21.0.10+7\"";
         assertTrue("Log message with backslashes not found — backslashes may have been dropped.\nActual: " + log.infoMessages,
                 log.infoMessages.stream().anyMatch(m -> m.equals(expectedMsg)));
